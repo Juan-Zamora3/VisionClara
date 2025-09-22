@@ -1,0 +1,13 @@
+<svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Eye shape -->
+  <ellipse cx="16" cy="16" rx="12" ry="8" fill="#1976D2"/>
+  
+  <!-- Iris -->
+  <circle cx="16" cy="16" r="5" fill="#64B5F6"/>
+  
+  <!-- Pupil -->
+  <circle cx="16" cy="16" r="2.5" fill="#0D47A1"/>
+  
+  <!-- Light reflection -->
+  <circle cx="14.5" cy="14.5" r="1" fill="#FFFFFF" opacity="0.8"/>
+</svg>

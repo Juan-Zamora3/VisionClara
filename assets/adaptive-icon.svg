@@ -1,0 +1,18 @@
+<svg width="1024" height="1024" viewBox="0 0 1024 1024" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Eye shape -->
+  <ellipse cx="512" cy="512" rx="280" ry="180" fill="#FFFFFF"/>
+  <ellipse cx="512" cy="512" rx="260" ry="160" fill="#E3F2FD"/>
+  
+  <!-- Iris -->
+  <circle cx="512" cy="512" r="120" fill="#1976D2"/>
+  
+  <!-- Pupil -->
+  <circle cx="512" cy="512" r="60" fill="#0D47A1"/>
+  
+  <!-- Light reflection -->
+  <circle cx="480" cy="480" r="20" fill="#FFFFFF" opacity="0.8"/>
+  
+  <!-- Medical cross -->
+  <rect x="490" y="300" width="44" height="120" fill="#4CAF50" rx="8"/>
+  <rect x="450" y="340" width="124" height="44" fill="#4CAF50" rx="8"/>
+</svg>
