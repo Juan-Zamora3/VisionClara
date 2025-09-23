@@ -4,46 +4,55 @@
     "slug": "VisionClara",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/icon.svg",
+
+    // 🔁 Usa PNG, no SVG
+    "icon": "./assets/icon.png",
+
     "userInterfaceStyle": "dark",
     "splash": {
-      "image": "./assets/splash.svg",
+      "image": "./assets/splash.png",
       "resizeMode": "contain",
       "backgroundColor": "#0f172b"
     },
-    "assetBundlePatterns": [
-      "**/*"
-    ],
+
+    "assetBundlePatterns": ["**/*"],
+
     "ios": {
-      "supportsTablet": true,
-      "statusBarStyle": "light",
-      "statusBarBackgroundColor": "#0f172b"
+      "supportsTablet": true
+      // (para status bar en iOS usa <StatusBar .../> de 'expo-status-bar')
     },
+
     "android": {
+      "package": "com.anonymous.VisionClara",
       "adaptiveIcon": {
-        "foregroundImage": "./assets/adaptive-icon.svg",
-        "backgroundColor": "#0f172b"
-      },
-      "statusBar": {
-        "backgroundColor": "#0f172b",
-        "barStyle": "light-content"
-      },
-      "navigationBar": {
+        "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#0f172b"
       }
     },
+
+    // ✅ Status/Navigation bar en Android van a nivel raíz:
+    "androidStatusBar": {
+      "backgroundColor": "#0f172b",
+      "barStyle": "light-content",
+      "translucent": false,
+      "hidden": false
+    },
+    "androidNavigationBar": {
+      "backgroundColor": "#0f172b",
+      "barStyle": "light-content",
+      "visible": true
+    },
+
     "web": {
       "output": "static",
-      "favicon": "./assets/favicon.svg"
+      "favicon": "./assets/favicon.png" // ✅ usa PNG para evitar broncas
     },
+
     "plugins": [
-      [
-        "expo-router",
-        {
-          "origin": "https://n"
-        }
-      ]
+      // Puedes dejar solo el plugin sin config extra:
+      "expo-router"
     ],
+
     "scheme": "acme"
   }
 }
