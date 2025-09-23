@@ -68,7 +68,7 @@ export default function ResultsScreen() {
 
   const navigateToReport = () => {
     router.push({
-      pathname: '/report',
+      pathname: '/tabs/report',
       params: result ? {
         patientName: result.patientName,
         result: result.result,
@@ -79,7 +79,7 @@ export default function ResultsScreen() {
   };
 
   const navigateToNewAnalysis = () => {
-    router.push('/upload');
+    router.push('/tabs/upload');
   };
 
   const shareResults = async () => {

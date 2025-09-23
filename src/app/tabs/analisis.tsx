@@ -75,15 +75,13 @@ function HeaderSection() {
   return (
     <View className="mb-8">
       {/* Back Button */}
-      <Link href="/login" asChild>
-        <TouchableOpacity className="mb-4">
-          <View className="flex-row items-center">
-            <Text className="text-2xl text-gray-600 mr-2">←</Text>
-            <Text className="text-gray-600 text-base">Análisis de Retina</Text>
-          </View>
-        </TouchableOpacity>
-      </Link>
-      
+      <TouchableOpacity className="mb-4" onPress={() => router.back()}>
+        <View className="flex-row items-center">
+          <Text className="text-2xl text-gray-600 mr-2">←</Text>
+          <Text className="text-gray-600 text-base">Análisis de Retina</Text>
+        </View>
+      </TouchableOpacity>
+
       {/* Title and Description */}
       <View className="text-center items-center">
         <Text className="text-2xl font-bold text-slate-900 mb-2">
@@ -96,6 +94,7 @@ function HeaderSection() {
     </View>
   );
 }
+
 
 // Componente de información del paciente
 interface PatientInfoSectionProps {
@@ -308,7 +307,7 @@ function ActionButton({
         [
           {
             text: 'Ver Resultados',
-            onPress: () => router.push('/resultados')
+            onPress: () => router.push('/tabs/results')
           }
         ]
       );

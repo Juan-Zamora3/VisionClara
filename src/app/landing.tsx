@@ -11,7 +11,7 @@ export default function LandingScreen() {
   const insets = useSafeAreaInsets();
 
   const navigateToLogin = () => {
-    router.push('/login');
+    router.push('/auth/login');
   };
 
   const navigateToInfo = () => {

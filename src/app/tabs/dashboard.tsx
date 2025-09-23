@@ -66,15 +66,15 @@ export default function DashboardScreen() {
   }, []);
 
   const navigateToUpload = () => {
-    router.push('/analisis');
+    router.push('/tabs/analisis');
   };
 
   const navigateToInfo = () => {
-    router.push('/info_inicio');
+    router.push('/tabs/info_inicio');
   };
 
   const navigateToResults = () => {
-    router.push('/resultados');
+    router.push('/tabs/resultados');
   };
 
   const handleLogout = () => {

@@ -1,36 +1,65 @@
-import { Link, router } from "expo-router";
+// app/auth/login.tsx
 import React, { useState } from "react";
-import { Text, View, TouchableOpacity, ScrollView, TextInput, StatusBar, SafeAreaView, Dimensions } from "react-native";
+import { router } from "expo-router";
+import {
+  Text,
+  View,
+  TouchableOpacity,
+  ScrollView,
+  TextInput,
+  StatusBar,
+  SafeAreaView,
+  Dimensions,
+  Platform,
+} from "react-native";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+
+// --- helper de login (web + nativo) ---
+async function handleLogin(email?: string) {
+  try {
+    if (Platform.OS === "web") {
+      // guarda “sesión” en navegador
+      sessionStorage.setItem("vc:isLoggedIn", "1");
+      if (email) sessionStorage.setItem("vc:userEmail", email);
+
+      // quita foco y navega en el siguiente tick (evita aria-hidden warning)
+      (document.activeElement as HTMLElement | null)?.blur();
+      setTimeout(() => router.replace("/tabs/analisis"), 0);
+    } else {
+      // guarda “sesión” en iOS/Android
+      await AsyncStorage.setItem("vc:isLoggedIn", "1");
+      if (email) await AsyncStorage.setItem("vc:userEmail", email);
+      router.replace("/tabs/analisis");
+    }
+  } catch (e) {
+    console.warn("Login error:", e);
+  }
+}
 
 export default function LoginScreen() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
   return (
-    <SafeAreaView style={{ height: Dimensions.get('window').height }} className="bg-slate-900">
+    <SafeAreaView
+      style={{ height: Dimensions.get("window").height }}
+      className="bg-slate-900"
+    >
       <StatusBar backgroundColor="#0f172b" barStyle="light-content" />
-      <ScrollView className="flex-1 bg-slate-900" showsVerticalScrollIndicator={false}>
-        {/* Header Navigation */}
+      <ScrollView
+        className="flex-1 bg-slate-900"
+        showsVerticalScrollIndicator={false}
+      >
         <HeaderNavigation />
-        
-        {/* Logo Section */}
         <LogoSection />
-        
-        {/* Welcome Section */}
         <WelcomeSection />
-        
-        {/* Login Form */}
-        <LoginForm 
+        <LoginForm
           email={email}
           setEmail={setEmail}
           password={password}
           setPassword={setPassword}
         />
-        
-        {/* Guest Section */}
         <GuestSection />
-        
-        {/* Privacy Disclaimer */}
         <PrivacyDisclaimer />
       </ScrollView>
     </SafeAreaView>
@@ -41,10 +70,7 @@ function HeaderNavigation() {
   return (
     <View className="px-6 py-4">
       <View className="flex-row items-center">
-        <TouchableOpacity 
-          onPress={() => router.back()}
-          className="mr-4"
-        >
+        <TouchableOpacity onPress={() => router.back()} className="mr-4">
           <Text className="text-white text-xl">←</Text>
         </TouchableOpacity>
         <Text className="text-white text-lg font-semibold">Iniciar Sesión</Text>
@@ -76,7 +102,12 @@ function WelcomeSection() {
   );
 }
 
-function LoginForm({ email, setEmail, password, setPassword }: {
+function LoginForm({
+  email,
+  setEmail,
+  password,
+  setPassword,
+}: {
   email: string;
   setEmail: (text: string) => void;
   password: string;
@@ -84,19 +115,17 @@ function LoginForm({ email, setEmail, password, setPassword }: {
 }) {
   return (
     <View className="px-6 mb-8">
-      {/* Email Field */}
       <EmailField email={email} setEmail={setEmail} />
-      
-      {/* Password Field */}
       <PasswordField password={password} setPassword={setPassword} />
-      
-      {/* Login Button */}
-      <LoginButton />
+      <LoginButton email={email} />
     </View>
   );
 }
 
-function EmailField({ email, setEmail }: {
+function EmailField({
+  email,
+  setEmail,
+}: {
   email: string;
   setEmail: (text: string) => void;
 }) {
@@ -121,7 +150,10 @@ function EmailField({ email, setEmail }: {
   );
 }
 
-function PasswordField({ password, setPassword }: {
+function PasswordField({
+  password,
+  setPassword,
+}: {
   password: string;
   setPassword: (text: string) => void;
 }) {
@@ -145,13 +177,21 @@ function PasswordField({ password, setPassword }: {
   );
 }
 
-function LoginButton() {
+// --- Botón de iniciar sesión ---
+function LoginButton({ email }: { email: string }) {
   return (
-    <Link href="/analisis" asChild>
-      <TouchableOpacity className="bg-emerald-500 rounded-xl py-4 items-center">
-        <Text className="text-white text-lg font-semibold">Iniciar Sesión</Text>
-      </TouchableOpacity>
-    </Link>
+    <TouchableOpacity
+      onPress={() => handleLogin(email)}
+      className="bg-emerald-500 rounded-xl py-4 items-center"
+      accessibilityRole="button"
+      accessibilityLabel="Iniciar sesión"
+      // evita retener foco en web
+      {...(Platform.OS === "web" ? ({ tabIndex: -1 } as any) : {})}
+      accessible={false}
+      focusable={false}
+    >
+      <Text className="text-white text-lg font-semibold">Iniciar Sesión</Text>
+    </TouchableOpacity>
   );
 }
 
@@ -161,14 +201,20 @@ function GuestSection() {
       <Text className="text-slate-400 text-center mb-4">
         ¿Solo quieres probar la aplicación?
       </Text>
-      <Link href="/analisis" asChild>
-        <TouchableOpacity className="bg-transparent border border-slate-600 rounded-xl py-3 items-center">
-          <View className="flex-row items-center">
-            <Text className="text-slate-400 mr-2">👤</Text>
-            <Text className="text-slate-300 text-base">Entrar como invitado</Text>
-          </View>
-        </TouchableOpacity>
-      </Link>
+      <TouchableOpacity
+        onPress={() => handleLogin()}
+        className="bg-transparent border border-slate-600 rounded-xl py-3 items-center"
+        accessibilityRole="button"
+        accessibilityLabel="Entrar como invitado"
+        {...(Platform.OS === "web" ? ({ tabIndex: -1 } as any) : {})}
+        accessible={false}
+        focusable={false}
+      >
+        <View className="flex-row items-center">
+          <Text className="text-slate-400 mr-2">👤</Text>
+          <Text className="text-slate-300 text-base">Entrar como invitado</Text>
+        </View>
+      </TouchableOpacity>
     </View>
   );
 }
@@ -177,7 +223,8 @@ function PrivacyDisclaimer() {
   return (
     <View className="px-6 pb-6">
       <Text className="text-slate-500 text-xs text-center leading-relaxed">
-        Tus datos son privados. Solo el administrador puede ver los resultados agregados para fines estadísticos.
+        Tus datos son privados. Solo el administrador puede ver los resultados
+        agregados para fines estadísticos.
       </Text>
     </View>
   );

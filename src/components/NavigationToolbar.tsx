@@ -14,19 +14,19 @@ const tabs: TabItem[] = [
   {
     name: 'analisis',
     icon: 'camera-outline',
-    route: '/analisis',
+    route: '/tabs/analisis',
     label: 'ANÁLISIS'
   },
   {
     name: 'historial',
     icon: 'time-outline',
-    route: '/dashboard',
+    route: '/tabs/dashboard',
     label: 'HISTORIAL'
   },
   {
     name: 'reportes',
     icon: 'document-text-outline',
-    route: '/report',
+    route: '/tabs/report',
     label: 'REPORTES'
   },
   {
