@@ -3,8 +3,13 @@ import "../global.css";
 import { Stack, usePathname, useRouter } from "expo-router";
 import { View, Platform } from "react-native";
 import { useEffect, useState } from "react";
-import NavigationToolbar from "../components/NavigationToolbar";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import * as SplashScreen from "expo-splash-screen";
+import { useFonts } from "expo-font";
+import Ionicons from "@expo/vector-icons/Ionicons";
+
+// Mantener el splash hasta que carguen las fuentes
+SplashScreen.preventAutoHideAsync();
 
 // Hook simple para sesión
 function useAuth() {
@@ -35,25 +40,33 @@ export default function RootLayout() {
   const router = useRouter();
   const { ready, isLoggedIn } = useAuth();
 
-  // Espera a saber si hay sesión antes de redirigir
+  // Cargar Ionicons (y otras fonts si quieres)
+  const [fontsLoaded, fontError] = useFonts({
+    ...Ionicons.font,
+  });
+
+  // Ocultar splash cuando todo está listo
+  useEffect(() => {
+    if ((ready && fontsLoaded) || fontError) {
+      SplashScreen.hideAsync();
+    }
+  }, [ready, fontsLoaded, fontError]);
+
+  // Redirección según sesión
   useEffect(() => {
     if (!ready) return;
-
-    // Si no logueado y entra a /tabs -> mándalo al login
     if (!isLoggedIn && pathname.startsWith("/tabs")) {
       router.replace("/auth/login");
-      return;
     }
-
-   
   }, [ready, isLoggedIn, pathname]);
 
   // Rutas sin toolbar
   const hideToolbarPages = ["/landing", "/auth/login", "/"];
-  const shouldShowToolbar = ready && !hideToolbarPages.includes(pathname);
+  const shouldShowToolbar =
+    ready && fontsLoaded && !hideToolbarPages.includes(pathname);
 
-  // Evita parpadeos mientras carga el estado de sesión
-  if (!ready) return null;
+  // Evita parpadeos mientras carga fonts o sesión
+  if (!ready || !fontsLoaded) return null;
 
   return (
     <View style={{ flex: 1 }}>
@@ -66,7 +79,6 @@ export default function RootLayout() {
         <Stack.Screen name="auth" options={{ headerShown: false }} />
         <Stack.Screen name="tabs" options={{ headerShown: false }} />
       </Stack>
-      {shouldShowToolbar && <NavigationToolbar />}
     </View>
   );
 }

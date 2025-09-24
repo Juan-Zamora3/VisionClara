@@ -4,24 +4,19 @@
     "slug": "VisionClara",
     "version": "1.0.0",
     "orientation": "portrait",
-
-    // 🔁 Usa PNG, no SVG
     "icon": "./assets/icon.png",
-
     "userInterfaceStyle": "dark",
     "splash": {
       "image": "./assets/splash.png",
       "resizeMode": "contain",
       "backgroundColor": "#0f172b"
     },
-
-    "assetBundlePatterns": ["**/*"],
-
+    "assetBundlePatterns": [
+      "**/*"
+    ],
     "ios": {
       "supportsTablet": true
-      // (para status bar en iOS usa <StatusBar .../> de 'expo-status-bar')
     },
-
     "android": {
       "package": "com.anonymous.VisionClara",
       "adaptiveIcon": {
@@ -29,8 +24,6 @@
         "backgroundColor": "#0f172b"
       }
     },
-
-    // ✅ Status/Navigation bar en Android van a nivel raíz:
     "androidStatusBar": {
       "backgroundColor": "#0f172b",
       "barStyle": "light-content",
@@ -42,17 +35,14 @@
       "barStyle": "light-content",
       "visible": true
     },
-
     "web": {
       "output": "static",
-      "favicon": "./assets/favicon.png" // ✅ usa PNG para evitar broncas
+      "favicon": "./assets/favicon.png"
     },
-
     "plugins": [
-      // Puedes dejar solo el plugin sin config extra:
-      "expo-router"
+      "expo-router",
+      "expo-font"
     ],
-
     "scheme": "acme"
   }
 }
