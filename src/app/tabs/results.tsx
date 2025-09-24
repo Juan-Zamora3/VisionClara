@@ -1,21 +1,16 @@
-import React, { useState, useEffect } from 'react';
+// app/tabs/results.tsx
+import React, { useMemo } from 'react';
 import {
-  View,
-  Text,
-  TouchableOpacity,
-  ScrollView,
-  StatusBar,
-  Image,
-  Alert,
-  Share,
+  View, Text, TouchableOpacity, ScrollView, StatusBar, Alert, Share,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { router, useLocalSearchParams } from 'expo-router';
 
+type Risk = 'normal' | 'suspicious';
 interface AnalysisResult {
   patientName: string;
-  result: 'normal' | 'suspicious';
+  result: Risk;
   confidence: string;
   date: string;
   details?: {
@@ -27,64 +22,60 @@ interface AnalysisResult {
 }
 
 export default function ResultsScreen() {
-  const params = useLocalSearchParams();
-  const [result, setResult] = useState<AnalysisResult | null>(null);
+  // ⚠️ NUNCA guardes el objeto completo en deps. Extrae las keys:
+  const { patientName: pn, result: rp, confidence: cp, date: dp } =
+    useLocalSearchParams<{
+      patientName?: string;
+      result?: Risk;
+      confidence?: string;
+      date?: string;
+    }>();
 
-  useEffect(() => {
-    // Obtener datos de los parámetros o usar datos de ejemplo
-    if (params.patientName) {
-      setResult({
-        patientName: params.patientName as string,
-        result: (params.result as 'normal' | 'suspicious') || 'normal',
-        confidence: (params.confidence as string) || '92.5',
-        date: (params.date as string) || new Date().toLocaleDateString('es-ES'),
-        details: {
+  // ✅ Derivado, sin setState/useEffect
+  const result: AnalysisResult = useMemo(() => {
+    const res = (rp === 'suspicious' ? 'suspicious' : 'normal') as Risk;
+    const confidence = cp || (res === 'suspicious' ? '87.3' : '92.5');
+    const date = dp || new Date().toLocaleDateString('es-ES');
+
+    const details = pn
+      ? {
           microaneurysms: Math.random() > 0.5,
           hemorrhages: Math.random() > 0.5,
           exudates: Math.random() > 0.5,
           neovascularization: Math.random() > 0.5,
         }
-      });
-    } else {
-      // Datos de ejemplo si no hay parámetros
-      setResult({
-        patientName: 'Paciente de Ejemplo',
-        result: 'suspicious',
-        confidence: '87.3',
-        date: new Date().toLocaleDateString('es-ES'),
-        details: {
+      : {
           microaneurysms: true,
           hemorrhages: false,
           exudates: true,
           neovascularization: false,
-        }
-      });
-    }
-  }, [params]);
+        };
 
-  const goBack = () => {
-    router.back();
-  };
+    return {
+      patientName: pn || 'Paciente de Ejemplo',
+      result: res,
+      confidence,
+      date,
+      details,
+    };
+  }, [pn, rp, cp, dp]);
 
-  const navigateToReport = () => {
+  const goBack = () => router.back();
+
+  const navigateToReport = () =>
     router.push({
       pathname: '/tabs/report',
-      params: result ? {
+      params: {
         patientName: result.patientName,
         result: result.result,
         confidence: result.confidence,
-        date: result.date
-      } : {}
+        date: result.date,
+      },
     });
-  };
 
-  const navigateToNewAnalysis = () => {
-    router.push('/tabs/upload');
-  };
+  const navigateToNewAnalysis = () => router.push('/tabs/upload');
 
   const shareResults = async () => {
-    if (!result) return;
-
     try {
       const message = `Resultado del análisis de retinopatía diabética:
 Paciente: ${result.patientName}
@@ -93,30 +84,19 @@ Confianza: ${result.confidence}%
 Fecha: ${result.date}
 
 Generado por Visión Clara - Sistema de detección temprana`;
-
-      await Share.share({
-        message,
-        title: 'Resultado de Análisis - Visión Clara'
-      });
-    } catch (error) {
+      await Share.share({ message, title: 'Resultado de Análisis - Visión Clara' });
+    } catch {
       Alert.alert('Error', 'No se pudo compartir el resultado');
     }
   };
 
-  if (!result) {
-    return (
-      <SafeAreaView style={{ flex: 1, backgroundColor: '#f8fafc' }}>
-        <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-          <Text style={{ color: '#64748b', fontSize: 16 }}>
-            Cargando resultados...
-          </Text>
-        </View>
-      </SafeAreaView>
-    );
-  }
-
   const isSuspicious = result.result === 'suspicious';
-  const confidenceNum = parseFloat(result.confidence);
+  const confidenceNum = Number.parseFloat(result.confidence || '0');
+
+  // …tu JSX a partir de aquí (sin cambios) …
+
+
+ 
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: '#f8fafc' }}>

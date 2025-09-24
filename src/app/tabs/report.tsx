@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useMemo, useRef, useState } from 'react';
 import {
   View,
   Text,
@@ -12,12 +12,12 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { router, useLocalSearchParams } from 'expo-router';
-import * as FileSystem from 'expo-file-system';
-import * as Sharing from 'expo-sharing';
+
+type ResultType = 'normal' | 'suspicious';
 
 interface ReportData {
   patientName: string;
-  result: 'normal' | 'suspicious';
+  result: ResultType;
   confidence: string;
   date: string;
   analysisTime: string;
@@ -31,90 +31,77 @@ interface ReportData {
 }
 
 export default function ReportScreen() {
-  const params = useLocalSearchParams();
-  const [reportData, setReportData] = useState<ReportData | null>(null);
+  const { patientName, result, confidence, date } = useLocalSearchParams<{
+    patientName?: string;
+    result?: string;
+    confidence?: string;
+    date?: string;
+  }>();
+
   const [isGenerating, setIsGenerating] = useState(false);
   const [reportGenerated, setReportGenerated] = useState(false);
 
-  useEffect(() => {
-    // Obtener datos de los parámetros o usar datos de ejemplo
-    if (params.patientName) {
-      setReportData({
-        patientName: params.patientName as string,
-        result: (params.result as 'normal' | 'suspicious') || 'normal',
-        confidence: (params.confidence as string) || '92.5',
-        date: (params.date as string) || new Date().toLocaleDateString('es-ES'),
-        analysisTime: new Date().toLocaleTimeString('es-ES'),
-        recommendations: getRecommendations(params.result as string),
-        technicalDetails: {
-          imageResolution: '2048x1536',
-          processingTime: '2.3 segundos',
-          algorithm: 'CNN ResNet-50',
-          version: 'v2.1.0'
-        }
-      });
-    } else {
-      // Datos de ejemplo
-      setReportData({
-        patientName: 'Paciente de Ejemplo',
-        result: 'suspicious',
-        confidence: '87.3',
-        date: new Date().toLocaleDateString('es-ES'),
-        analysisTime: new Date().toLocaleTimeString('es-ES'),
-        recommendations: getRecommendations('suspicious'),
-        technicalDetails: {
-          imageResolution: '2048x1536',
-          processingTime: '2.3 segundos',
-          algorithm: 'CNN ResNet-50',
-          version: 'v2.1.0'
-        }
-      });
-    }
-  }, [params]);
+  // Fecha/hora de referencia “congelada” al montar
+  const nowRef = useRef(new Date());
 
-  const getRecommendations = (result: string): string[] => {
-    if (result === 'suspicious') {
-      return [
-        'Consultar con un oftalmólogo especialista en retina',
-        'Realizar estudios complementarios si es necesario',
-        'Mantener control estricto de glucosa en sangre',
-        'Seguimiento periódico cada 3-6 meses',
-        'Monitorear síntomas visuales'
-      ];
-    } else {
-      return [
-        'Continuar con controles anuales de rutina',
-        'Mantener buen control de la diabetes',
-        'Seguir las indicaciones de su médico tratante',
-        'Consultar ante cualquier cambio en la visión',
-        'Mantener estilo de vida saludable'
-      ];
-    }
+  const getRecommendations = (r: ResultType): string[] => {
+    return r === 'suspicious'
+      ? [
+          'Consultar con un oftalmólogo especialista en retina',
+          'Realizar estudios complementarios si es necesario',
+          'Mantener control estricto de glucosa en sangre',
+          'Seguimiento periódico cada 3-6 meses',
+          'Monitorear síntomas visuales',
+        ]
+      : [
+          'Continuar con controles anuales de rutina',
+          'Mantener buen control de la diabetes',
+          'Seguir las indicaciones de su médico tratante',
+          'Consultar ante cualquier cambio en la visión',
+          'Mantener estilo de vida saludable',
+        ];
   };
+
+  const resolvedResult: ResultType =
+    (result === 'suspicious' || result === 'normal') ? (result as ResultType) : 'normal';
+
+  const reportData: ReportData = useMemo(() => {
+    const d = nowRef.current;
+    const locale = 'es-ES';
+
+    const base: ReportData = {
+      patientName: patientName || 'Paciente de Ejemplo',
+      result: patientName ? resolvedResult : 'suspicious',
+      confidence: confidence || (patientName ? '92.5' : '87.3'),
+      date: date || d.toLocaleDateString(locale),
+      analysisTime: d.toLocaleTimeString(locale),
+      recommendations: getRecommendations(patientName ? resolvedResult : 'suspicious'),
+      technicalDetails: {
+        imageResolution: '2048x1536',
+        processingTime: '2.3 segundos',
+        algorithm: 'CNN ResNet-50',
+        version: 'v2.1.0',
+      },
+    };
+
+    return base;
+  }, [patientName, resolvedResult, confidence, date]); // solo dependencias primitivas
 
   const goBack = () => {
     router.back();
   };
 
   const generatePDFReport = async () => {
-    if (!reportData) return;
-
     setIsGenerating(true);
-    
     try {
-      // Simular generación de PDF
-      await new Promise(resolve => setTimeout(resolve, 3000));
-      
-      // En una implementación real, aquí se generaría el PDF
-      // usando una librería como react-native-pdf-lib o expo-print
-      
+      await new Promise((r) => setTimeout(r, 3000));
       setReportGenerated(true);
       Alert.alert(
         'Reporte Generado',
         'El reporte PDF ha sido generado exitosamente.',
         [
           { text: 'Compartir', onPress: shareReport },
-          { text: 'OK', style: 'default' }
+          { text: 'OK', style: 'default' },
         ]
       );
     } catch (error) {
@@ -126,10 +113,8 @@ export default function ReportScreen() {
 
   const shareReport = async () => {
     if (!reportData) return;
+    const reportContent = `REPORTE DE ANÁLISIS - VISIÓN CLARA
 
-    try {
-      const reportContent = `REPORTE DE ANÁLISIS - VISIÓN CLARA
-      
 Información del Paciente:
 Nombre: ${reportData.patientName}
 Fecha de análisis: ${reportData.date}
@@ -140,7 +125,7 @@ Estado: ${reportData.result === 'normal' ? 'Normal' : 'Sospechoso'}
 Confianza: ${reportData.confidence}%
 
 Recomendaciones:
-${reportData.recommendations.map((rec, index) => `${index + 1}. ${rec}`).join('\n')}
+${reportData.recommendations.map((rec, i) => `${i + 1}. ${rec}`).join('\n')}
 
 Detalles Técnicos:
 Resolución de imagen: ${reportData.technicalDetails.imageResolution}
@@ -152,9 +137,10 @@ Versión del sistema: ${reportData.technicalDetails.version}
 Generado por Visión Clara - Sistema de detección temprana de retinopatía diabética
 Este reporte es una herramienta de apoyo diagnóstico y no sustituye la evaluación médica profesional.`;
 
+    try {
       await Share.share({
         message: reportContent,
-        title: `Reporte - ${reportData.patientName} - ${reportData.date}`
+        title: `Reporte - ${reportData.patientName} - ${reportData.date}`,
       });
     } catch (error) {
       Alert.alert('Error', 'No se pudo compartir el reporte');
@@ -176,19 +162,6 @@ Este reporte es una herramienta de apoyo diagnóstico y no sustituye la evaluaci
       [{ text: 'OK' }]
     );
   };
-
-  if (!reportData) {
-    return (
-      <SafeAreaView style={{ flex: 1, backgroundColor: '#f8fafc' }}>
-        <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-          <ActivityIndicator size="large" color="#3b82f6" />
-          <Text style={{ color: '#64748b', fontSize: 16, marginTop: 16 }}>
-            Cargando datos del reporte...
-          </Text>
-        </View>
-      </SafeAreaView>
-    );
-  }
 
   const isSuspicious = reportData.result === 'suspicious';
 
