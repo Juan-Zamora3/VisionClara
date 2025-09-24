@@ -4,7 +4,7 @@ Write-Host "=== Iniciando Expo con USB + localhost ==="
 adb kill-server
 adb start-server
 
-# 2. Limpiar y aplicar reglas reverse
+# 2. Limpiar y aplicar reglas revers
 adb reverse --remove-all
 adb reverse tcp:8081 tcp:8081
 adb reverse tcp:19000 tcp:19000
